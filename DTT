@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DTT Tracker</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: rgba(18, 20, 26, 0.84);
+      --panel-2: rgba(24, 28, 36, 0.92);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #eef1f7;
+      --muted: #a4adbb;
+      --accent: #7c8cff;
+      --accent-2: #6ee7d8;
+      --accent-3: #9b8cff;
+      --danger: #ff7a90;
+      --shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(124,140,255,0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(110,231,216,0.10), transparent 24%),
+        radial-gradient(circle at bottom, rgba(155,140,255,0.12), transparent 26%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 42px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+    }
+
+    .title-card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -70px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,140,255,0.18), transparent 65%);
+      pointer-events: none;
+    }
+
+    .phone {
+      font-size: clamp(72px, 10vw, 124px);
+      line-height: 1;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 12px 24px rgba(124,140,255,0.25));
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 62ch;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metric {
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .metric .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .small {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+    }
+
+    .dropzone {
+      min-height: 320px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 1.5px dashed rgba(124,140,255,0.5);
+      background:
+        linear-gradient(180deg, rgba(124,140,255,0.08), rgba(255,255,255,0.02)),
+        rgba(18,20,26,0.72);
+      transition: 0.22s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .dropzone.dragover {
+      transform: translateY(-1px);
+      border-color: rgba(110,231,216,0.9);
+      box-shadow: 0 0 0 6px rgba(110,231,216,0.08);
+    }
+
+    .dropzone .big {
+      font-size: 72px;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .dropzone h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .dropzone p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 48ch;
+    }
+
+    .controls {
+      width: 100%;
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr 180px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .control {
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .control::placeholder { color: #718096; }
+
+    .btn {
+      padding: 14px 16px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(124,140,255,0.22);
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    input[type="file"] { display: none; }
+
+    .side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .bar-shell {
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-top: 12px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.35s ease;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .row strong { color: var(--text); }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .mini {
+      padding: 14px;
+      border-radius: 16px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+    }
+
+    .mini .k {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .mini .v {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      word-break: break-word;
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(110,231,216,0.2);
+      background: rgba(110,231,216,0.08);
+      color: #d9fffb;
+      display: none;
+    }
+
+    .error {
+      border-color: rgba(255,122,144,0.25);
+      background: rgba(255,122,144,0.08);
+      color: #ffd9df;
+    }
+
+    .footer {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 920px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="card title-card">
+        <div class="phone">📞</div>
+        <h1>DTT Tracker</h1>
+        <div class="subtitle">
+          Sube tu CSV del día, detecta el tiempo de cada llamada, suma <strong>+1 minuto</strong> por cada llamada válida y mira el total al instante.
+        </div>
+      </div>
+
+      <div class="card" style="padding: 22px;">
+        <div class="metrics">
+          <div class="metric">
+            <div class="label">Total DTT</div>
+            <div class="value" id="totalDtt">00:00:00</div>
+            <div class="small" id="totalDttMin">0.00 min</div>
+          </div>
+          <div class="metric">
+            <div class="label">Último drop</div>
+            <div class="value" id="lastDrop">—</div>
+            <div class="small" id="fileName">Sin archivo</div>
+          </div>
+          <div class="metric">
+            <div class="label">Llamadas válidas</div>
+            <div class="value" id="validCalls">0</div>
+            <div class="small" id="rowsParsed">0 filas leídas</div>
+          </div>
+          <div class="metric">
+            <div class="label">Extra agregado</div>
+            <div class="value" id="bonusTime">00:00:00</div>
+            <div class="small">+1 minuto por llamada válida</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card dropzone" id="dropzone">
+        <div class="big">📂</div>
+        <h2>Drop your CSV here</h2>
+        <p>O haz clic para elegir el archivo. La página buscará una columna de tiempo, sumará la duración y añadirá el bono de 1 minuto por cada llamada válida.</p>
+
+        <div class="controls">
+          <label class="btn" for="fileInput">Elegir CSV</label>
+          <input id="fileInput" type="file" accept=".csv,text/csv" />
+          <input id="goalInput" class="control" type="number" min="1" step="1" value="480" placeholder="Meta min" title="Meta del día en minutos" />
+        </div>
+
+        <div class="status" id="successStatus"></div>
+        <div class="status error" id="errorStatus"></div>
+      </div>
+
+      <div class="side">
+        <div class="panel">
+          <h3>Progreso del día</h3>
+          <div class="row"><span>Meta</span><strong id="goalLabel">480 min</strong></div>
+          <div class="row"><span>Avance</span><strong id="progressLabel">0%</strong></div>
+          <div class="bar-shell"><div class="bar-fill" id="progressBar"></div></div>
+          <div class="note">La barra usa la meta que pongas arriba. Puedes cambiarla cuando quieras.</div>
+        </div>
+
+        <div class="panel">
+          <h3>Resumen rápido</h3>
+          <div class="list">
+            <div class="mini"><div class="k">Duración base</div><div class="v" id="baseDuration">00:00:00</div></div>
+            <div class="mini"><div class="k">Bono total</div><div class="v" id="bonusDuration">00:00:00</div></div>
+            <div class="mini"><div class="k">Tiempo promedio</div><div class="v" id="avgDuration">00:00:00</div></div>
+          </div>
+          <div class="note">Si el CSV trae una columna de estado, la app intenta usarla para decidir qué filas cuentan como válidas. Si no, toma las filas con tiempo legible.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Hecho para uso rápido: arrastra el CSV, mira el total y sigue actualizando el archivo del día.</div>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const goalInput = document.getElementById('goalInput');
+    const totalDtt = document.getElementById('totalDtt');
+    const totalDttMin = document.getElementById('totalDttMin');
+    const lastDrop = document.getElementById('lastDrop');
+    const fileName = document.getElementById('fileName');
+    const validCalls = document.getElementById('validCalls');
+    const rowsParsed = document.getElementById('rowsParsed');
+    const bonusTime = document.getElementById('bonusTime');
+    const baseDuration = document.getElementById('baseDuration');
+    const bonusDuration = document.getElementById('bonusDuration');
+    const avgDuration = document.getElementById('avgDuration');
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const goalLabel = document.getElementById('goalLabel');
+    const successStatus = document.getElementById('successStatus');
+    const errorStatus = document.getElementById('errorStatus');
+
+    const state = {
+      lastTotalSeconds: 0,
+      lastFileName: ''
+    };
+
+    function formatHMS(totalSeconds) {
+      totalSeconds = Math.max(0, Math.round(totalSeconds));
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+    }
+
+    function formatMin(totalSeconds) {
+      return (totalSeconds / 60).toFixed(2) + ' min';
+    }
+
+    function normalizeText(value) {
+      return String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function showMessage(el, text) {
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    function clearMessage(el) {
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+
+    function parseCSV(text, delimiter) {
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (char === '"' && next === '"') {
+            cell += '"';
+            i++;
+          } else if (char === '"') {
+            inQuotes = false;
+          } else {
+            cell += char;
+          }
+        } else {
+          if (char === '"') {
+            inQuotes = true;
+          } else if (char === delimiter) {
+            row.push(cell);
+            cell = '';
+          } else if (char === '\n') {
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = '';
+          } else if (char === '\r') {
+            continue;
+          } else {
+            cell += char;
+          }
+        }
+      }
+
+      if (cell.length || row.length) {
+        row.push(cell);
+        rows.push(row);
+      }
+
+      return rows.filter(r => r.some(v => String(v).trim() !== ''));
+    }
+
+    function guessDelimiter(text) {
+      const sample = text.slice(0, 4000);
+      const counts = {
+        ',': (sample.match(/,/g) || []).length,
+        ';': (sample.match(/;/g) || []).length,
+        '\t': (sample.match(/\t/g) || []).length,
+        '|': (sample.match(/\|/g) || []).length
+      };
+
+      let best = ',';
+      let max = -1;
+      for (const [delim, count] of Object.entries(counts)) {
+        if (count > max) {
+          best = delim;
+          max = count;
+        }
+      }
+      return best;
+    }
+
+    function parseDurationToSeconds(value) {
+      if (value == null) return null;
+      const raw = String(value).trim();
+      if (!raw) return null;
+
+      if (/^\d+(?::\d+){1,2}$/.test(raw)) {
+        const parts = raw.split(':').map(Number);
+        if (parts.some(Number.isNaN)) return null;
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+
+      const compact = normalizeText(raw).replace(/\s+/g, '');
+      const h = compact.match(/(\d+(?:\.\d+)?)h/);
+      const m = compact.match(/(\d+(?:\.\d+)?)m/);
+      const s = compact.match(/(\d+(?:\.\d+)?)s/);
+      if (h || m || s) {
+        const hours = h ? parseFloat(h[1]) : 0;
+        const mins = m ? parseFloat(m[1]) : 0;
+        const secs = s ? parseFloat(s[1]) : 0;
+        return Math.round(hours * 3600 + mins * 60 + secs);
+      }
+
+      if (/^\d+(?:\.\d+)?$/.test(raw)) {
+        const n = Number(raw);
+        if (!Number.isFinite(n)) return null;
+        return n >= 60 ? Math.round(n) : Math.round(n * 60);
+      }
+
+      return null;
+    }
+
+    function isValidStatus(value) {
+      const v = normalizeText(value);
+      if (!v) return null;
+
+      const invalid = ['invalid', 'no', 'false', 'rejected', 'discard', 'bad', 'failed', 'error', 'not valid', 'no valido', 'no válida', 'no valido'];
+      const valid = ['valid', 'yes', 'true', 'answered', 'completed', 'done', 'ok', 'success', 'aprobada', 'aprobado', 'valida', 'válida'];
+
+      if (invalid.some(k => v.includes(k))) return false;
+      if (valid.some(k => v.includes(k))) return true;
+      return null;
+    }
+
+    function findColumn(headers, patterns) {
+      const normHeaders = headers.map(normalizeText);
+      for (let i = 0; i < normHeaders.length; i++) {
+        if (patterns.some(p => normHeaders[i].includes(p))) return i;
+      }
+      return -1;
+    }
+
+    function updateProgress(totalSeconds) {
+      const goalMinutes = Math.max(1, Number(goalInput.value) || 480);
+      const goalSeconds = goalMinutes * 60;
+      const pct = Math.min(100, (totalSeconds / goalSeconds) * 100);
+      progressBar.style.width = pct.toFixed(1) + '%';
+      progressLabel.textContent = pct.toFixed(1) + '%';
+      goalLabel.textContent = goalMinutes + ' min';
+    }
+
+    function renderSummary({ baseSeconds, bonusSeconds, totalSeconds, validCount, rowsCount, fileNameValue }) {
+      state.lastTotalSeconds = totalSeconds;
+      state.lastFileName = fileNameValue;
+
+      totalDtt.textContent = formatHMS(totalSeconds);
+      totalDttMin.textContent = formatMin(totalSeconds);
+      validCalls.textContent = String(validCount);
+      rowsParsed.textContent = `${rowsCount} filas leídas`;
+      bonusTime.textContent = formatHMS(bonusSeconds);
+      baseDuration.textContent = formatHMS(baseSeconds);
+      bonusDuration.textContent = formatHMS(bonusSeconds);
+      avgDuration.textContent = validCount ? formatHMS(baseSeconds / validCount) : '00:00:00';
+      fileName.textContent = fileNameValue || 'Sin archivo';
+      lastDrop.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      updateProgress(totalSeconds);
+    }
+
+    function parseFile(text, filename) {
+      const delimiter = guessDelimiter(text);
+      const rows = parseCSV(text, delimiter);
+
+      if (!rows.length) {
+        throw new Error('No pude leer el CSV.');
+      }
+
+      const headers = rows[0].map(h => String(h ?? '').trim());
+      const body = rows.slice(1);
+      const durationCol = findColumn(headers, ['duracion', 'duration', 'time', 'tiempo', 'call_time', 'talk', 'seconds', 'segundos']);
+      const statusCol = findColumn(headers, ['estado', 'status', 'valid', 'validez', 'resultado', 'result', 'disposition', 'outcome']);
+
+      let baseSeconds = 0;
+      let bonusSeconds = 0;
+      let validCount = 0;
+      let rowsCount = 0;
+
+      for (const row of body) {
+        if (!row.some(v => String(v ?? '').trim() !== '')) continue;
+        rowsCount++;
+
+        let durationSource = durationCol >= 0 ? row[durationCol] : null;
+        let seconds = parseDurationToSeconds(durationSource);
+
+        if (seconds == null) {
+          for (const cell of row) {
+            seconds = parseDurationToSeconds(cell);
+            if (seconds != null) break;
+          }
+        }
+
+        const status = statusCol >= 0 ? isValidStatus(row[statusCol]) : null;
+        const rowValid = status === true ? true : status === false ? false : seconds != null;
+
+        if (seconds != null) baseSeconds += seconds;
+        if (rowValid && seconds != null) {
+          validCount++;
+          bonusSeconds += 60;
+        }
+      }
+
+      if (!rowsCount) {
+        throw new Error('El CSV está vacío.');
+      }
+
+      if (!baseSeconds && validCount === 0) {
+        throw new Error('No encontré una columna de tiempo legible.');
+      }
+
+      const totalSeconds = baseSeconds + bonusSeconds;
+      renderSummary({ baseSeconds, bonusSeconds, totalSeconds, validCount, rowsCount, fileNameValue: filename });
+      showMessage(successStatus, `Listo: ${validCount} llamadas válidas procesadas y ${rowsCount} filas leídas.`);
+      clearMessage(errorStatus);
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      const looksLikeCsv = /\.csv$/i.test(file.name) || (file.type && (file.type.includes('csv') || file.type.includes('text')));
+      if (!looksLikeCsv) {
+        showMessage(errorStatus, 'Ese archivo no parece ser un CSV.');
+        clearMessage(successStatus);
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        parseFile(text, file.name);
+      } catch (err) {
+        showMessage(errorStatus, err?.message || 'No se pudo procesar el archivo.');
+        clearMessage(successStatus);
+      }
+    }
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const file = e.dataTransfer.files?.[0];
+      handleFile(file);
+    });
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => handleFile(fileInput.files?.[0]));
+    goalInput.addEventListener('input', () => updateProgress(state.lastTotalSeconds));
+
+    renderSummary({
+      baseSeconds: 0,
+      bonusSeconds: 0,
+      totalSeconds: 0,
+      validCount: 0,
+      rowsCount: 0,
+      fileNameValue: ''
+    });
+  </script>
+</body>
+</html>
